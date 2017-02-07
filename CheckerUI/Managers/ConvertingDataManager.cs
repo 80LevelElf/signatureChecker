@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using CheckerUI.Entities;
 
@@ -8,45 +7,25 @@ namespace CheckerUI.Managers
 {
 	public static class ConvertingDataManager
 	{
-		public static void ConvertDirectory(string dataDirectoryPath)
+		public static List<User> ConvertUserList(List<User> userList, double signatureSize = 100)
 		{
-			if (!Directory.Exists(dataDirectoryPath))
-				throw new DirectoryNotFoundException();
+			return userList.Select(i => ConvertUser(i, signatureSize)).ToList();
+		} 
 
-			string directoryName = Path.GetFileName(dataDirectoryPath);
-			var newDirectoryPath = Path.Combine(Directory.GetParent(dataDirectoryPath).FullName, directoryName + "_new");
- 
-			if (!Directory.Exists(newDirectoryPath))
-				Directory.CreateDirectory(newDirectoryPath);
-			else
-			{
-				foreach (var fileToDelete in Directory.GetFiles(newDirectoryPath))
-				{
-					File.Delete(fileToDelete);
-				}
-			}
-
-			foreach (var filePath in Directory.EnumerateFiles(dataDirectoryPath))
-			{
-				var fileName = Path.GetFileName(filePath);
-				var newFilePath = Path.Combine(newDirectoryPath, fileName);
-
-				ConvertFile(filePath, newFilePath);
-			}
+		public static User ConvertUser(User user, double signatureSize = 100)
+		{
+			return new User(user.UserId, 
+				user.SignatureList.Select(i => ConvertSignature(i, signatureSize)).ToList());
 		}
 
-		private static void ConvertFile(string oldPath, string newPath)
+		public static Signature ConvertSignature(Signature signature, double size = 100)
 		{
-			var lineEnumerable = File.ReadAllLines(oldPath).Skip(1);
-			List<SignaturePoint> pointList = new List<SignaturePoint>();
+			return new Signature(signature.SignatureId, ConvertSignature(signature.SignaturePointList, size));
+		}
 
-			foreach (var line in lineEnumerable)
-			{
-				var partArray = line.Split(' ');
-				pointList.Add(new SignaturePoint(int.Parse(partArray[0]), int.Parse(partArray[1])));
-			}
-
-			pointList = PrepareSignature(pointList);
+		public static List<SignaturePoint> ConvertSignature(List<SignaturePoint> pointList, double size = 100)
+		{
+			pointList = GetPreparedSignature(pointList);
 
 			//Add line points
 			var linePointList = new List<SignaturePoint>();
@@ -56,24 +35,14 @@ namespace CheckerUI.Managers
 				linePointList.AddRange(GetLinePointList(pointList[i], pointList[i + 1]));
 			}
 
-			//Write data
-			using (var fileStream = File.Create(newPath))
-			{
-				using (StreamWriter writer = new StreamWriter(fileStream))
-				{
-					foreach (var point in linePointList.Distinct())
-					{
-						writer.WriteLine("{0} {1}", point.X, point.Y);
-					}
-				}
-			}
+			return linePointList;
 		}
 
-		public static List<SignaturePoint> PrepareSignature(List<SignaturePoint> pointList, double size = 100)
+		public static List<SignaturePoint> GetPreparedSignature(List<SignaturePoint> pointList, double size = 100)
 		{
 			pointList = new List<SignaturePoint>(pointList.Select(i => new SignaturePoint(i.X, i.Y)));
 
-			//Clear
+			// Move
 			var minX = pointList.Min(i => i.X);
 			var minY = pointList.Min(i => i.Y);
 
@@ -83,7 +52,7 @@ namespace CheckerUI.Managers
 				point.Y -= minY;
 			}
 
-			//Scale
+			// Scale
 			var maxX = pointList.Max(i => i.X);
 			var maxY = pointList.Max(i => i.Y);
 
@@ -95,7 +64,7 @@ namespace CheckerUI.Managers
 				point.X = (int)(point.X * xK);
 				point.Y = (int)(point.Y * yk);
 
-				point.Y += 2 * ((int) size / 2 - point.Y);
+				point.Y += (int) size - 2 * point.Y;
 			}
 
 			return pointList;

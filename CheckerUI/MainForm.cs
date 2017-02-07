@@ -12,30 +12,30 @@ namespace CheckerUI
 {
 	public partial class MainForm : Form
 	{
-		private List<User> _rawUserList; 
+		private List<User> _rawUserList;
+		private readonly string _rawDataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "raw_data");
+
+		private List<User> _userList;
+		private readonly string _dataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sanitized_data");
 
 		public MainForm()
 		{
 			InitializeComponent();
 
 			ReadRawData();
+			ReadData();
 		}
 
 		private void ReadRawData()
 		{
-			string directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "raw_data");
-			_rawUserList = ReadingManager.ReadData(directoryPath);
+			_rawUserList = FileManager.ReadAllFromDirectory(_rawDataDirectory);
+			ReloadDataToListBox(listBoxRawData, _rawUserList);
+		}
 
-			var listToShow = new List<UISignatureItem>();
-			foreach (var user in _rawUserList)
-			{
-				foreach (var signature in user.SignatureList)
-				{
-					listToShow.Add(new UISignatureItem(user.UserId, signature.SignatureId));
-				}
-			}
-
-			listBoxRawData.Items.AddRange(listToShow.OrderBy(i => i.UserId).ThenBy(i => i.SignatureId).ToArray());
+		private void ReadData()
+		{
+			_userList = FileManager.ReadAllFromDirectory(_dataDirectory);
+			ReloadDataToListBox(listBoxData, _userList);
 		}
 
 		private void listBoxRawData_Click(object sender, EventArgs e)
@@ -43,47 +43,52 @@ namespace CheckerUI
 			panelRawDataPreview.Refresh();
 		}
 
+		private void listBoxData_Click(object sender, EventArgs e)
+		{
+			panelDataPreview.Refresh();
+		}
+
+		private void buttonRefreshData_Click(object sender, EventArgs e)
+		{
+			ReadData();
+		}
+
 		private void panelRawDataPreview_Paint(object sender, PaintEventArgs e)
 		{
-			Graphics graphics = e.Graphics;
+			DrawSelectedSignatureOfListBox(listBoxRawData, _rawUserList, e.Graphics);
+		}
 
-			var selectedItem = listBoxRawData.SelectedItem;
+		private void panelDataPreview_Paint(object sender, PaintEventArgs e)
+		{
+			DrawSelectedSignatureOfListBox(listBoxData, _userList, e.Graphics);
+		}
+
+		private void DrawSelectedSignatureOfListBox(ListBox listBox, List<User> userList, Graphics graphics)
+		{
+			var selectedItem = listBox.SelectedItem;
 			if (selectedItem == null)
 				return;
 
-			var selectedSignatureItem = (UISignatureItem) selectedItem;
-			var signaturePointList = GetSignature(_rawUserList, selectedSignatureItem.UserId, selectedSignatureItem.SignatureId)
+			var selectedSignatureItem = (UISignatureItem)selectedItem;
+			var signaturePointList = GetSignature(userList, selectedSignatureItem.UserId, selectedSignatureItem.SignatureId)
 				.SignaturePointList;
-			
-			DrawSignature(signaturePointList, graphics, false);
+
+			DrawSignature(signaturePointList, graphics);
 		}
 
-		private void DrawSignature(List<SignaturePoint> signaturePointList, Graphics graphics, bool asLine = true)
+		private void DrawSignature(List<SignaturePoint> signaturePointList, Graphics graphics)
 		{
 			double spaceK = 0.1;
 
-			signaturePointList = ConvertingDataManager.PrepareSignature(signaturePointList,
+			signaturePointList = ConvertingDataManager.GetPreparedSignature(signaturePointList,
 				Math.Min(panelRawDataPreview.Width * (1 - spaceK), panelRawDataPreview.Height * (1 - spaceK)));
 
 			int startX = (int) (panelRawDataPreview.Width * spaceK / 2);
 			int startY = (int) (panelRawDataPreview.Height * spaceK / 2);
 
-			if (asLine)
+			foreach (var point in signaturePointList)
 			{
-				for (int i = 0; i < signaturePointList.Count - 1; i++)
-				{
-					var first = signaturePointList[i];
-					var second = signaturePointList[i + 1];
-
-					graphics.DrawLine(Pens.Black, startX + first.X, startY + first.Y, startX + second.X, startY + second.Y);
-				}
-			}
-			else
-			{
-				foreach (var point in signaturePointList)
-				{
-					graphics.DrawRectangle(Pens.Black, startX + point.X, startY + point.Y, 2, 2);
-				}
+				graphics.DrawRectangle(Pens.Black, startX + point.X, startY + point.Y, 1, 1);
 			}
 		}
 
@@ -94,6 +99,37 @@ namespace CheckerUI
 				return null;
 
 			return user.SignatureList.FirstOrDefault(i => i.SignatureId == signatureId);
+		}
+
+		private void buttonPrepareAllSignatures_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				FileManager.WriteAllToDirectory(_dataDirectory, ConvertingDataManager.ConvertUserList(_rawUserList));
+			}
+			catch (Exception exception)
+			{
+				MessageBox.Show(string.Format("Во время конвертации произошла следующая ошибка: {0}",
+					exception.Message), "Внимание!", MessageBoxButtons.OK);
+				return;
+			}
+
+			MessageBox.Show("Конвертация произошла без проблем", "Удачна конвертация!", MessageBoxButtons.OK);
+		}
+
+		private void ReloadDataToListBox(ListBox listBox, List<User> userList)
+		{
+			var listToShow = new List<UISignatureItem>();
+			foreach (var user in userList)
+			{
+				foreach (var signature in user.SignatureList)
+				{
+					listToShow.Add(new UISignatureItem(user.UserId, signature.SignatureId));
+				}
+			}
+
+			listBox.Items.Clear();
+			listBox.Items.AddRange(listToShow.OrderBy(i => i.UserId).ThenBy(i => i.SignatureId).ToArray());
 		}
 	}
 }

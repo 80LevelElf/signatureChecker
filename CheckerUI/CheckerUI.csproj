@@ -56,7 +56,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Managers\ConvertingDataManager.cs" />
-    <Compile Include="Managers\ReadingManager.cs" />
+    <Compile Include="Managers\FileManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UIEntities\UISignatureItem.cs" />
