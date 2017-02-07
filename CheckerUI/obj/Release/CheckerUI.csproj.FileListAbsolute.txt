@@ -1,0 +1,9 @@
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\CheckerUI.exe.config
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.csprojResolveAssemblyReference.cache
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.MainForm.resources
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.Properties.Resources.resources
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.csproj.GenerateResource.Cache
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\CheckerUI.exe
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\CheckerUI.pdb
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.exe
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.pdb

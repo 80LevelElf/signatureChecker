@@ -1,0 +1,9 @@
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Debug\CheckerUI.exe.config
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Debug\CheckerUI.exe
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Debug\CheckerUI.pdb
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Debug\CheckerUI.MainForm.resources
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Debug\CheckerUI.Properties.Resources.resources
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Debug\CheckerUI.csproj.GenerateResource.Cache
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Debug\CheckerUI.exe
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Debug\CheckerUI.pdb
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Debug\CheckerUI.csprojResolveAssemblyReference.cache

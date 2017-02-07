@@ -15,7 +15,7 @@ namespace Learning.Managers
 
 			string directoryName = Path.GetFileName(dataDirectoryPath);
 			var newDirectoryPath = Path.Combine(Directory.GetParent(dataDirectoryPath).FullName, directoryName + "_new");
-
+ 
 			if (!Directory.Exists(newDirectoryPath))
 				Directory.CreateDirectory(newDirectoryPath);
 			else
@@ -57,6 +57,7 @@ namespace Learning.Managers
 			}
 
 			//Scale data
+
 			var maxX = pointList.Max(i => i.X);
 			var maxY = pointList.Max(i => i.Y);
 
