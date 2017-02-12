@@ -53,6 +53,9 @@ namespace CheckerUI.Managers
 			}
 
 			// Scale
+			// All data will have coordinates from 0 to size - 1
+			size--;
+
 			var maxX = pointList.Max(i => i.X);
 			var maxY = pointList.Max(i => i.Y);
 

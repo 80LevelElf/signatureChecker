@@ -9,15 +9,15 @@ namespace Learning
 {
 	public class NeuralNet
 	{
-		private readonly Random random = new Random();
-		private readonly CircularBuffer<double> trainAccWindow = new CircularBuffer<double>(100);
-		private readonly CircularBuffer<double> valAccWindow = new CircularBuffer<double>(100);
-		private readonly CircularBuffer<double> wLossWindow = new CircularBuffer<double>(100);
-		private readonly CircularBuffer<double> xLossWindow = new CircularBuffer<double>(100);
-		private Net net;
-		private int stepCount;
-		private Trainer trainer;
-		List<User> userList;
+		private readonly CircularBuffer<double> _trainAccuracyBuffer = new CircularBuffer<double>(100);
+		private readonly CircularBuffer<double> _validationAccuracyBuffer = new CircularBuffer<double>(100);
+		private readonly CircularBuffer<double> _weightLossBuffer = new CircularBuffer<double>(100);
+		private readonly CircularBuffer<double> _xLossBuffer = new CircularBuffer<double>(100);
+
+		private Net _net;
+		private int _stepCount;
+		private Trainer _trainer;
+		List<User> _userList;
 		int neededUserId = 1;
 		int imageSize = 105;
 		int imageUsingSize = 101;
@@ -25,32 +25,32 @@ namespace Learning
 		public void Demo()
 		{
 			// Load data
-			userList = ReadingManager.ReadData(@"C:\Users\RustamSalakhutdinov\Documents\visual studio 2015\Projects\signatureChecker\data_new");
+			_userList = ReadingManager.ReadData(@"C:\Users\RustamSalakhutdinov\Documents\visual studio 2015\Projects\signatureChecker\data_new");
 
 			// Create network
-			this.net = new Net();
-			this.net.AddLayer(new InputLayer(imageSize, imageSize, 1));
-			this.net.AddLayer(new ConvLayer(25, 25, 8) { Stride = 1, Pad = 2, Activation = Activation.Relu });
-			this.net.AddLayer(new PoolLayer(2, 2) { Stride = 2 });
-			this.net.AddLayer(new ConvLayer(5, 5, 16) { Stride = 1, Pad = 2, Activation = Activation.Relu });
-			this.net.AddLayer(new PoolLayer(3, 3) { Stride = 3 });
-			this.net.AddLayer(new SoftmaxLayer(2));
+			_net = new Net();
+			_net.AddLayer(new InputLayer(imageSize, imageSize, 1));
+			_net.AddLayer(new ConvLayer(25, 25, 8) { Stride = 1, Pad = 2, Activation = Activation.Relu });
+			_net.AddLayer(new PoolLayer(2, 2) { Stride = 2 });
+			_net.AddLayer(new ConvLayer(5, 5, 16) { Stride = 1, Pad = 2, Activation = Activation.Relu });
+			_net.AddLayer(new PoolLayer(3, 3) { Stride = 3 });
+			_net.AddLayer(new SoftmaxLayer(2));
 
-			this.trainer = new Trainer(this.net)
+			_trainer = new Trainer(_net)
 			{
 				BatchSize = 20,
 				L2Decay = 0.001,
-				TrainingMethod = Trainer.Method.Adadelta
+				TrainingMethod = Trainer.Method.Sgd
 			};
 
 			do
 			{
-				var sample = this.SampleTrainingInstance();
+				var sample = GenerateTrainingInstance();
 				if (!Step(sample))
 					break;
 			} while (!Console.KeyAvailable);
 
-			foreach (User user in userList)
+			foreach (User user in _userList)
 			{
 				var signature = user.SignatureList[0];
 
@@ -58,70 +58,70 @@ namespace Learning
 
 				foreach (var point in signature.SignaturePointList)
 				{
-					x.Weights[point.X * 101 + point.Y] = 1;
+					x.Weights[point.X * imageUsingSize + point.Y] = 1;
 				}
 
 				x = x.Augment(imageUsingSize);
 
-				var result = net.Forward(x);
+				var result = _net.Forward(x);
 				Console.WriteLine("UserId: {0}. Result: {1} | {2}", user.UserId, result.Weights[0], result.Weights[1]);
 			}
 		}
 
-		private bool Step(Item sample)
+		private bool Step(TrainingItem sample)
 		{
 			var x = sample.Volume;
-			var y = sample.Label;
+			var y = sample.ClassIndex;
 
 			if (sample.IsValidation)
 			{
 				// use x to build our estimate of validation error
-				this.net.Forward(x);
-				var yhat = this.net.GetPrediction();
+				_net.Forward(x);
+				int yhat = _net.GetPrediction();
 				var valAcc = yhat == y ? 1.0 : 0.0;
-				this.valAccWindow.Add(valAcc);
+				_validationAccuracyBuffer.Add(valAcc);
 				return true;
 			}
 
 			// train on it with network
-			this.trainer.Train(x, y);
-			var lossx = this.trainer.CostLoss;
-			var lossw = this.trainer.L2DecayLoss;
+			_trainer.Train(x, y);
+			var lossx = _trainer.CostLoss;
+			var lossw = _trainer.L2DecayLoss;
 
 			// keep track of stats such as the average training error and loss
-			var prediction = this.net.GetPrediction();
+			int prediction = _net.GetPrediction();
 			var trainAcc = prediction == y ? 1.0 : 0.0;
-			this.xLossWindow.Add(lossx);
-			this.wLossWindow.Add(lossw);
-			this.trainAccWindow.Add(trainAcc);
+			_xLossBuffer.Add(lossx);
+			_weightLossBuffer.Add(lossw);
+			_trainAccuracyBuffer.Add(trainAcc);
 
-			if (this.stepCount % 200 == 0)
+			if (_stepCount % 200 == 0)
 			{
-				if (this.xLossWindow.Count == this.xLossWindow.Capacity)
+				if (_xLossBuffer.Count == _xLossBuffer.Capacity)
 				{
-					var xa = this.xLossWindow.Items.Average();
-					var xw = this.wLossWindow.Items.Average();
+					var xa = _xLossBuffer.Items.Average();
+					var xw = _weightLossBuffer.Items.Average();
 					var loss = xa + xw;
 
 					Console.WriteLine("Loss: {0} Train accuray: {1} Test accuracy: {2}", loss,
-						Math.Round(this.trainAccWindow.Items.Average() * 100.0, 2),
-						Math.Round(this.valAccWindow.Items.Average() * 100.0, 2));
+						Math.Round(_trainAccuracyBuffer.Items.Average() * 100.0, 2),
+						Math.Round(_validationAccuracyBuffer.Items.Average() * 100.0, 2));
 
-					Console.WriteLine("Example seen: {0} Fwd: {1}ms Bckw: {2}ms", this.stepCount,
-						Math.Round(this.trainer.ForwardTime.TotalMilliseconds, 2),
-						Math.Round(this.trainer.BackwardTime.TotalMilliseconds, 2));
+					Console.WriteLine("Example seen: {0} Fwd: {1}ms Bckw: {2}ms", _stepCount,
+						Math.Round(_trainer.ForwardTime.TotalMilliseconds, 2),
+						Math.Round(_trainer.BackwardTime.TotalMilliseconds, 2));
 
-					if (trainAccWindow.Items.Average()*100.0 < 0.05)
+					if (_trainAccuracyBuffer.Items.Average()*100.0 < 0.05)
 						return false;
 				}
 			}
 
-			if (this.stepCount % 1000 == 0)
+			if (_stepCount % 1000 == 0)
 			{
-				this.TestPredict();
+				TestPredict();
 			}
 
-			this.stepCount++;
+			_stepCount++;
 
 			return true;
 		}
@@ -130,24 +130,23 @@ namespace Learning
 		{
 			for (var i = 0; i < 50; i++)
 			{
-				List<Item> sample = this.SampleTestingInstance();
-				var y = sample[0].Label; // ground truth label
+				List<TrainingItem> sample = GenerateTestingInstance();
 
 				// forward prop it through the network
 				var average = new Volume(1, 1, 2, 0.0);
 				var n = sample.Count;
 				for (var j = 0; j < n; j++)
 				{
-					var a = this.net.Forward(sample[j].Volume);
+					var a = this._net.Forward(sample[j].Volume);
 					average.AddFrom(a);
 				}
 			}
 		}
 
-		private Item SampleTrainingInstance()
+		private TrainingItem GenerateTrainingInstance()
 		{
 			Random random = new Random();
-			var user = userList[random.Next(userList.Count)];
+			var user = _userList[random.Next(_userList.Count)];
 			var signature = user.SignatureList[random.Next(user.SignatureList.Count)];
 
 			// Create volume from image data
@@ -155,20 +154,20 @@ namespace Learning
 
 			foreach (var point in signature.SignaturePointList)
 			{
-				x.Weights[point.X*101 + point.Y] = 1;
+				x.Weights[point.X* imageUsingSize + point.Y] = 1;
 			}
 
 			x = x.Augment(imageUsingSize);
 
-			return new Item { Volume = x, Label = user.UserId == neededUserId? 1 : 0, IsValidation = random.Next(10) == 0 };
+			return new TrainingItem { Volume = x, ClassIndex = user.UserId == neededUserId? 1 : 0, IsValidation = random.Next(10) == 0 };
 		}
 
-		private List<Item> SampleTestingInstance()
+		private List<TrainingItem> GenerateTestingInstance()
 		{
-			List<Item> result = new List<Item>(4);
+			List<TrainingItem> result = new List<TrainingItem>(4);
 			for (int i = 0; i < 4; i++)
 			{
-				Item instance = SampleTrainingInstance();
+				TrainingItem instance = GenerateTrainingInstance();
 				instance.IsValidation = false;
 				result.Add(instance);
 			}
@@ -176,11 +175,11 @@ namespace Learning
 			return result;
 		}
 
-		private class Item
+		private class TrainingItem
 		{
 			public Volume Volume { get; set; }
 
-			public int Label { get; set; }
+			public int ClassIndex { get; set; }
 
 			public bool IsValidation { get; set; }
 		}
