@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using ConvNetSharp;
 using Learning.Entities;
@@ -19,8 +20,7 @@ namespace Learning
 		private Trainer _trainer;
 		List<User> _userList;
 		int neededUserId = 1;
-		int imageSize = 105;
-		int imageUsingSize = 101;
+		const int imageSize = 101;
 
 		public void Demo()
 		{
@@ -30,9 +30,9 @@ namespace Learning
 			// Create network
 			_net = new Net();
 			_net.AddLayer(new InputLayer(imageSize, imageSize, 1));
-			_net.AddLayer(new ConvLayer(25, 25, 8) { Stride = 1, Pad = 2, Activation = Activation.Relu });
+			_net.AddLayer(new ConvLayer(5, 5, 16) { Stride = 1, Pad = 1, Activation = Activation.Relu });
 			_net.AddLayer(new PoolLayer(2, 2) { Stride = 2 });
-			_net.AddLayer(new ConvLayer(5, 5, 16) { Stride = 1, Pad = 2, Activation = Activation.Relu });
+			_net.AddLayer(new ConvLayer(5, 5, 8) { Stride = 1, Pad = 1, Activation = Activation.Relu });
 			_net.AddLayer(new PoolLayer(3, 3) { Stride = 3 });
 			_net.AddLayer(new SoftmaxLayer(2));
 
@@ -43,25 +43,29 @@ namespace Learning
 				TrainingMethod = Trainer.Method.Sgd
 			};
 
+			Stopwatch sw = Stopwatch.StartNew();
 			do
 			{
 				var sample = GenerateTrainingInstance();
 				if (!Step(sample))
 					break;
 			} while (!Console.KeyAvailable);
+			sw.Stop();
+			Console.WriteLine(sw.ElapsedMilliseconds / 1000.0);
 
 			foreach (User user in _userList)
 			{
-				var signature = user.SignatureList[0];
+				Random random = new Random();
+				var signature = user.SignatureList[random.Next(user.SignatureList.Count)];
 
 				var x = new Volume(imageSize, imageSize, 1, 0.0);
 
 				foreach (var point in signature.SignaturePointList)
 				{
-					x.Weights[point.X * imageUsingSize + point.Y] = 1;
+					x.Weights[point.X * imageSize + point.Y] = 1;
 				}
 
-				x = x.Augment(imageUsingSize);
+				x = x.Augment(imageSize);
 
 				var result = _net.Forward(x);
 				Console.WriteLine("UserId: {0}. Result: {1} | {2}", user.UserId, result.Weights[0], result.Weights[1]);
@@ -111,7 +115,7 @@ namespace Learning
 						Math.Round(_trainer.ForwardTime.TotalMilliseconds, 2),
 						Math.Round(_trainer.BackwardTime.TotalMilliseconds, 2));
 
-					if (_trainAccuracyBuffer.Items.Average()*100.0 < 0.05)
+					if (Math.Abs(_validationAccuracyBuffer.Items.Average() - 1) < 0.005)
 						return false;
 				}
 			}
@@ -128,7 +132,7 @@ namespace Learning
 
 		private void TestPredict()
 		{
-			for (var i = 0; i < 50; i++)
+			/*for (var i = 0; i < 50; i++)
 			{
 				List<TrainingItem> sample = GenerateTestingInstance();
 
@@ -140,25 +144,28 @@ namespace Learning
 					var a = this._net.Forward(sample[j].Volume);
 					average.AddFrom(a);
 				}
-			}
+			}*/
 		}
 
 		private TrainingItem GenerateTrainingInstance()
 		{
 			Random random = new Random();
-			var user = _userList[random.Next(_userList.Count)];
+			int userId = random.Next(_userList.Count);
+			if (random.Next(3) == 1)
+				userId = neededUserId;
+
+			var user = _userList[userId];
 			var signature = user.SignatureList[random.Next(user.SignatureList.Count)];
 
 			// Create volume from image data
 			var x = new Volume(imageSize, imageSize, 1, 0.0);
-
+			
 			foreach (var point in signature.SignaturePointList)
 			{
-				x.Weights[point.X* imageUsingSize + point.Y] = 1;
+				x.Weights[point.X * imageSize + point.Y] = 1;
 			}
 
-			x = x.Augment(imageUsingSize);
-
+			x = x.Augment(imageSize);
 			return new TrainingItem { Volume = x, ClassIndex = user.UserId == neededUserId? 1 : 0, IsValidation = random.Next(10) == 0 };
 		}
 
