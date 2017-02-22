@@ -33,14 +33,14 @@ namespace Learning
 			_net.AddLayer(new ConvLayer(5, 5, 16) { Stride = 1, Pad = 1, Activation = Activation.Relu });
 			_net.AddLayer(new PoolLayer(2, 2) { Stride = 2 });
 			_net.AddLayer(new ConvLayer(5, 5, 8) { Stride = 1, Pad = 1, Activation = Activation.Relu });
-			_net.AddLayer(new PoolLayer(3, 3) { Stride = 3 });
+			_net.AddLayer(new PoolLayer(2, 2) { Stride = 2 });
 			_net.AddLayer(new SoftmaxLayer(2));
 
 			_trainer = new Trainer(_net)
 			{
 				BatchSize = 20,
 				L2Decay = 0.001,
-				TrainingMethod = Trainer.Method.Sgd
+				TrainingMethod = Trainer.Method.Adadelta
 			};
 
 			Stopwatch sw = Stopwatch.StartNew();
@@ -120,31 +120,9 @@ namespace Learning
 				}
 			}
 
-			if (_stepCount % 1000 == 0)
-			{
-				TestPredict();
-			}
-
 			_stepCount++;
 
 			return true;
-		}
-
-		private void TestPredict()
-		{
-			/*for (var i = 0; i < 50; i++)
-			{
-				List<TrainingItem> sample = GenerateTestingInstance();
-
-				// forward prop it through the network
-				var average = new Volume(1, 1, 2, 0.0);
-				var n = sample.Count;
-				for (var j = 0; j < n; j++)
-				{
-					var a = this._net.Forward(sample[j].Volume);
-					average.AddFrom(a);
-				}
-			}*/
 		}
 
 		private TrainingItem GenerateTrainingInstance()
@@ -167,19 +145,6 @@ namespace Learning
 
 			x = x.Augment(imageSize);
 			return new TrainingItem { Volume = x, ClassIndex = user.UserId == neededUserId? 1 : 0, IsValidation = random.Next(10) == 0 };
-		}
-
-		private List<TrainingItem> GenerateTestingInstance()
-		{
-			List<TrainingItem> result = new List<TrainingItem>(4);
-			for (int i = 0; i < 4; i++)
-			{
-				TrainingItem instance = GenerateTrainingInstance();
-				instance.IsValidation = false;
-				result.Add(instance);
-			}
-
-			return result;
 		}
 
 		private class TrainingItem
