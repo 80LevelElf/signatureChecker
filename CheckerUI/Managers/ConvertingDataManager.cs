@@ -7,7 +7,7 @@ namespace CheckerUI.Managers
 {
 	public static class ConvertingDataManager
 	{
-		public static List<User> ConvertUserList(List<User> userList, double signatureSize = 100)
+		public static List<User> ConvertUserList(List<User> userList, int signatureSize = 100)
 		{
 			return userList.Select(i => ConvertUser(i, signatureSize)).ToList();
 		} 
@@ -38,7 +38,8 @@ namespace CheckerUI.Managers
 			return linePointList;
 		}
 
-		public static List<SignaturePoint> GetPreparedSignature(List<SignaturePoint> pointList, double size = 100)
+		public static List<SignaturePoint> GetPreparedSignature(List<SignaturePoint> pointList, double size = 100,
+			bool flip = true)
 		{
 			pointList = new List<SignaturePoint>(pointList.Select(i => new SignaturePoint(i.X, i.Y)));
 
@@ -67,7 +68,8 @@ namespace CheckerUI.Managers
 				point.X = (int)(point.X * xK);
 				point.Y = (int)(point.Y * yk);
 
-				point.Y += (int) size - 2 * point.Y;
+				if (flip)
+					point.Y += (int) size - 2 * point.Y;
 			}
 
 			return pointList;

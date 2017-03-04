@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using CheckerUI.Entities;
 using CheckerUI.Managers;
 using CheckerUI.UIEntities;
+using Learning;
 
 namespace CheckerUI
 {
@@ -55,15 +56,15 @@ namespace CheckerUI
 
 		private void panelRawDataPreview_Paint(object sender, PaintEventArgs e)
 		{
-			DrawSelectedSignatureOfListBox(listBoxRawData, _rawUserList, e.Graphics);
+			DrawSelectedSignatureOfListBox(listBoxRawData, _rawUserList, e.Graphics, true);
 		}
 
 		private void panelDataPreview_Paint(object sender, PaintEventArgs e)
 		{
-			DrawSelectedSignatureOfListBox(listBoxData, _userList, e.Graphics);
+			DrawSelectedSignatureOfListBox(listBoxData, _userList, e.Graphics, false);
 		}
 
-		private void DrawSelectedSignatureOfListBox(ListBox listBox, List<User> userList, Graphics graphics)
+		private void DrawSelectedSignatureOfListBox(ListBox listBox, List<User> userList, Graphics graphics, bool flip)
 		{
 			var selectedItem = listBox.SelectedItem;
 			if (selectedItem == null)
@@ -73,15 +74,15 @@ namespace CheckerUI
 			var signaturePointList = GetSignature(userList, selectedSignatureItem.UserId, selectedSignatureItem.SignatureId)
 				.SignaturePointList;
 
-			DrawSignature(signaturePointList, graphics);
+			DrawSignature(signaturePointList, graphics, flip);
 		}
 
-		private void DrawSignature(List<SignaturePoint> signaturePointList, Graphics graphics)
+		private void DrawSignature(List<SignaturePoint> signaturePointList, Graphics graphics, bool flip)
 		{
 			double spaceK = 0.1;
 
 			signaturePointList = ConvertingDataManager.GetPreparedSignature(signaturePointList,
-				Math.Min(panelRawDataPreview.Width * (1 - spaceK), panelRawDataPreview.Height * (1 - spaceK)));
+				Math.Min(panelRawDataPreview.Width * (1 - spaceK), panelRawDataPreview.Height * (1 - spaceK)), flip);
 
 			int startX = (int) (panelRawDataPreview.Width * spaceK / 2);
 			int startY = (int) (panelRawDataPreview.Height * spaceK / 2);
@@ -105,7 +106,8 @@ namespace CheckerUI
 		{
 			try
 			{
-				FileManager.WriteAllToDirectory(_dataDirectory, ConvertingDataManager.ConvertUserList(_rawUserList));
+				FileManager.WriteAllToDirectory(_dataDirectory, ConvertingDataManager.ConvertUserList(_rawUserList,
+					(int)nudImageSize.Value));
 			}
 			catch (Exception exception)
 			{
@@ -130,6 +132,17 @@ namespace CheckerUI
 
 			listBox.Items.Clear();
 			listBox.Items.AddRange(listToShow.OrderBy(i => i.UserId).ThenBy(i => i.SignatureId).ToArray());
+		}
+
+		private void btnStartLearning_Click(object sender, EventArgs e)
+		{
+			txtLearingOutput.Clear();
+
+			NeuralNet net = new NeuralNet();
+			net.Start(_userList, (int)nudUserId.Value, (int)nudImageSize.Value, str =>
+			{
+				txtLearingOutput.AppendText(string.Format("\n{0}", str));
+			});
 		}
 	}
 }

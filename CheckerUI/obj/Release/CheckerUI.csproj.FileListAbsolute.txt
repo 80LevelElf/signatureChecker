@@ -7,3 +7,5 @@ C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChec
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\CheckerUI.pdb
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.exe
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.pdb
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\ConvNetSharp.dll
+C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\ConvNetSharp.pdb

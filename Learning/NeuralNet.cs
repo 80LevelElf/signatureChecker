@@ -10,10 +10,9 @@ namespace Learning
 {
 	public class NeuralNet
 	{
-		private readonly CircularBuffer<double> _trainAccuracyBuffer = new CircularBuffer<double>(100);
-		private readonly CircularBuffer<double> _validationAccuracyBuffer = new CircularBuffer<double>(100);
-		private readonly CircularBuffer<double> _weightLossBuffer = new CircularBuffer<double>(100);
-		private readonly CircularBuffer<double> _xLossBuffer = new CircularBuffer<double>(100);
+		private readonly CircularBuffer<int> _trainAccuracyBuffer = new CircularBuffer<int>(100);
+		private readonly CircularBuffer<int> _validationAccuracyBuffer = new CircularBuffer<int>(100);
+		private readonly CircularBuffer<double> _lossBuffer = new CircularBuffer<double>(100);
 
 		private Net _net;
 		private int _stepCount;
@@ -40,7 +39,7 @@ namespace Learning
 			{
 				BatchSize = 20,
 				L2Decay = 0.001,
-				TrainingMethod = Trainer.Method.Adadelta
+				TrainingMethod = Trainer.Method.Adagrad
 			};
 
 			Stopwatch sw = Stopwatch.StartNew();
@@ -49,6 +48,7 @@ namespace Learning
 				var sample = GenerateTrainingInstance();
 				if (!Step(sample))
 					break;
+
 			} while (!Console.KeyAvailable);
 			sw.Stop();
 			Console.WriteLine(sw.ElapsedMilliseconds / 1000.0);
@@ -82,42 +82,32 @@ namespace Learning
 				// use x to build our estimate of validation error
 				_net.Forward(x);
 				int yhat = _net.GetPrediction();
-				var valAcc = yhat == y ? 1.0 : 0.0;
+				var valAcc = yhat == y ? 1 : 0;
 				_validationAccuracyBuffer.Add(valAcc);
 				return true;
 			}
 
 			// train on it with network
 			_trainer.Train(x, y);
-			var lossx = _trainer.CostLoss;
-			var lossw = _trainer.L2DecayLoss;
 
 			// keep track of stats such as the average training error and loss
 			int prediction = _net.GetPrediction();
-			var trainAcc = prediction == y ? 1.0 : 0.0;
-			_xLossBuffer.Add(lossx);
-			_weightLossBuffer.Add(lossw);
+			var trainAcc = prediction == y ? 1 : 0;
+			_lossBuffer.Add(_trainer.Loss);
 			_trainAccuracyBuffer.Add(trainAcc);
 
 			if (_stepCount % 200 == 0)
 			{
-				if (_xLossBuffer.Count == _xLossBuffer.Capacity)
-				{
-					var xa = _xLossBuffer.Items.Average();
-					var xw = _weightLossBuffer.Items.Average();
-					var loss = xa + xw;
+				double loss = _lossBuffer.Items.Average();
+				double trainAvgAcc = _trainAccuracyBuffer.Items.Average();
+				double validationAvgAcc = _validationAccuracyBuffer.Items.Average();
 
-					Console.WriteLine("Loss: {0} Train accuray: {1} Test accuracy: {2}", loss,
-						Math.Round(_trainAccuracyBuffer.Items.Average() * 100.0, 2),
-						Math.Round(_validationAccuracyBuffer.Items.Average() * 100.0, 2));
+				Console.WriteLine("Loss: {0} Train accuray: {1} Test accuracy: {2}", loss,
+					Math.Round(trainAvgAcc * 100.0, 2),
+					Math.Round(validationAvgAcc * 100.0, 2));
 
-					Console.WriteLine("Example seen: {0} Fwd: {1}ms Bckw: {2}ms", _stepCount,
-						Math.Round(_trainer.ForwardTime.TotalMilliseconds, 2),
-						Math.Round(_trainer.BackwardTime.TotalMilliseconds, 2));
-
-					if (Math.Abs(_validationAccuracyBuffer.Items.Average() - 1) < 0.005)
-						return false;
-				}
+				if (_trainAccuracyBuffer.Items.All(i => i == 1) && _validationAccuracyBuffer.Items.All(i => i == 1))
+					return false;
 			}
 
 			_stepCount++;
@@ -128,12 +118,20 @@ namespace Learning
 		private TrainingItem GenerateTrainingInstance()
 		{
 			Random random = new Random();
-			int userId = random.Next(_userList.Count);
-			if (random.Next(3) == 1)
-				userId = neededUserId;
+			bool isValidation = random.Next(10) == 0;
 
+			int userId = random.Next(_userList.Count);
 			var user = _userList[userId];
-			var signature = user.SignatureList[random.Next(user.SignatureList.Count)];
+
+			// Calculate signature index
+			int signatureIndex;
+			var testRange = user.SignatureList.Count*3/4;
+			if (!isValidation)
+				signatureIndex = random.Next(testRange);
+			else
+				signatureIndex = testRange + random.Next(user.SignatureList.Count - testRange);
+
+			var signature = user.SignatureList[signatureIndex];
 
 			// Create volume from image data
 			var x = new Volume(imageSize, imageSize, 1, 0.0);
@@ -144,7 +142,7 @@ namespace Learning
 			}
 
 			x = x.Augment(imageSize);
-			return new TrainingItem { Volume = x, ClassIndex = user.UserId == neededUserId? 1 : 0, IsValidation = random.Next(10) == 0 };
+			return new TrainingItem { Volume = x, ClassIndex = user.UserId == neededUserId? 1 : 0, IsValidation = isValidation };
 		}
 
 		private class TrainingItem
