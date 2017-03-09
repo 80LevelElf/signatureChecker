@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace ConvNetSharp
 {
-    public class ParametersAndGradients
+	[Serializable]
+	public class ParametersAndGradients
     {
         public double[] Parameters { get; set; }
 
@@ -27,7 +29,8 @@ namespace ConvNetSharp
     [KnownType(typeof(SvmLayer))]
     [KnownType(typeof(TanhLayer))]
     [DataContract]
-    public abstract class LayerBase
+	[Serializable]
+	public abstract class LayerBase
     {
         public Volume InputActivation { get; protected set; }
 

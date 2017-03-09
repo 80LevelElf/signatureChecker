@@ -6,3 +6,6 @@ C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChec
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\Learning\obj\Release\Learning.csprojResolveAssemblyReference.cache
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\Learning\obj\Release\Learning.exe
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\Learning\obj\Release\Learning.pdb
+C:\signatureChecker\Learning\bin\Release\Learning.exe.config
+C:\signatureChecker\Learning\obj\Release\Learning.exe
+C:\signatureChecker\Learning\obj\Release\Learning.pdb

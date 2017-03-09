@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace ConvNetSharp
 {
+	[Serializable]
     public class Net
     {
         private readonly List<LayerBase> layers = new List<LayerBase>();

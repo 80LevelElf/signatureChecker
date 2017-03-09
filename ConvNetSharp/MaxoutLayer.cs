@@ -10,7 +10,8 @@ namespace ConvNetSharp
     ///     the input size should be exactly divisible by group_size
     /// </summary>
     [DataContract]
-    public class MaxoutLayer : LayerBase
+	[Serializable]
+	public class MaxoutLayer : LayerBase
     {
         [DataMember]
         private int[] switches;

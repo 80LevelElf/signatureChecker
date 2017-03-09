@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace ConvNetSharp
 {
-    [DataContract]
+	[Serializable]
+	[DataContract]
     public class ConvLayer : LayerBase, IDotProductLayer
     {
         public ConvLayer(int width, int height, int filterCount)

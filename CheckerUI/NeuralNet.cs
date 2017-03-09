@@ -7,6 +7,7 @@ using ConvNetSharp;
 
 namespace Learning
 {
+	[Serializable]
 	public class NeuralNet
 	{
 		private readonly CircularBuffer<int> _trainAccuracyBuffer = new CircularBuffer<int>(100);
@@ -27,7 +28,7 @@ namespace Learning
 			_userList = userList;
 			_neededUserId = neededUserId;
 			_imageSize = imageSize;
-			_stepCount = 0;
+			_stepCount = 1;
 			_infoOutputFunc = infoOutputFunc;
 
 			// Create network
@@ -57,15 +58,15 @@ namespace Learning
 			sw.Stop();
 
 			if (_infoOutputFunc != null)
-				_infoOutputFunc(string.Format("Время тренировки: {0} мск", sw.ElapsedMilliseconds));
+				_infoOutputFunc(string.Format("\nВремя тренировки: {0} мск", sw.ElapsedMilliseconds));
 
 			Console.WriteLine(sw.ElapsedMilliseconds / 1000.0);
 
 			// Output checking
 			if (_infoOutputFunc != null)
-				_infoOutputFunc("\nId пользователя \t\t Не верный пользователь \t\t Верный пользователь");
+				_infoOutputFunc("\n\nId пользователя \t\t Неверный пользователь \t\t Верный пользователь");
 
-			foreach (User user in _userList)
+			foreach (User user in _userList.OrderByDescending(i => i.UserId))
 			{
 				Random random = new Random();
 				var signature = user.SignatureList[random.Next(user.SignatureList.Count)];
@@ -74,7 +75,7 @@ namespace Learning
 				var result = _net.Forward(x);
 
 				if (_infoOutputFunc != null)
-					_infoOutputFunc(string.Format("{0} \t\t {1} \t\t {2}", user.UserId, result.Weights[0], result.Weights[1]));
+					_infoOutputFunc(string.Format("{0} \t\t\t {1} \t\t {2}", user.UserId, result.Weights[0], result.Weights[1]));
 			}
 		}
 
@@ -111,7 +112,7 @@ namespace Learning
 				if (_infoOutputFunc != null)
 				{
 					_infoOutputFunc(
-						string.Format("Ошибка: {0}\t Пройденных тестовых примеров: {1}\t Пройденных валидационных примеров: {2}",
+						string.Format("Ошибка: {0}\t\t Пройденных тестовых примеров: {1}\t\t Пройденных валидационных примеров: {2}",
 							loss,
 							Math.Round(trainAvgAcc*100.0, 2),
 							Math.Round(validationAvgAcc*100.0, 2)));

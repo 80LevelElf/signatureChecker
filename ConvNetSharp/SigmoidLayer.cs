@@ -9,7 +9,8 @@ namespace ConvNetSharp
     ///     so the output is between 0 and 1.
     /// </summary>
     [DataContract]
-    public class SigmoidLayer : LayerBase
+	[Serializable]
+	public class SigmoidLayer : LayerBase
     {
         public override Volume Forward(Volume input, bool isTraining = false)
         {

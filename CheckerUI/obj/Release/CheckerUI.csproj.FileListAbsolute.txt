@@ -9,3 +9,14 @@ C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChec
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\obj\Release\CheckerUI.pdb
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\ConvNetSharp.dll
 C:\Users\RustamSalakhutdinov\documents\visual studio 2015\Projects\signatureChecker\CheckerUI\bin\Release\ConvNetSharp.pdb
+C:\signatureChecker\CheckerUI\bin\Release\CheckerUI.exe.config
+C:\signatureChecker\CheckerUI\obj\Release\CheckerUI.exe
+C:\signatureChecker\CheckerUI\obj\Release\CheckerUI.pdb
+C:\signatureChecker\CheckerUI\bin\Release\CheckerUI.exe
+C:\signatureChecker\CheckerUI\bin\Release\CheckerUI.pdb
+C:\signatureChecker\CheckerUI\bin\Release\ConvNetSharp.dll
+C:\signatureChecker\CheckerUI\bin\Release\ConvNetSharp.pdb
+C:\signatureChecker\CheckerUI\obj\Release\CheckerUI.csprojResolveAssemblyReference.cache
+C:\signatureChecker\CheckerUI\obj\Release\CheckerUI.MainForm.resources
+C:\signatureChecker\CheckerUI\obj\Release\CheckerUI.Properties.Resources.resources
+C:\signatureChecker\CheckerUI\obj\Release\CheckerUI.csproj.GenerateResource.Cache

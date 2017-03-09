@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 namespace ConvNetSharp
 {
     [DataContract]
-    public class PoolLayer : LayerBase
+	[Serializable]
+	public class PoolLayer : LayerBase
     {
         [DataMember]
         private int[] switchx;

@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace ConvNetSharp
 {
-    [DataContract]
+	[Serializable]
+	[DataContract]
     public class FullyConnLayer : LayerBase, IDotProductLayer
     {
         [DataMember]

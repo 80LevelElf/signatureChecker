@@ -9,7 +9,8 @@ namespace ConvNetSharp
     ///     and y is the user-provided array of "correct" values.
     /// </summary>
     [DataContract]
-    public class RegressionLayer : LayerBase, ILastLayer
+	[Serializable]
+	public class RegressionLayer : LayerBase, ILastLayer
     {
         public RegressionLayer(int neuronCount)
         {

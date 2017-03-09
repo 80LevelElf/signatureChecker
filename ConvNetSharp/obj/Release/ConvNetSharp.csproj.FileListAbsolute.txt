@@ -3,3 +3,9 @@ C:\Users\RustamSalakhutdinov\Documents\Visual Studio 2015\Projects\signatureChec
 C:\Users\RustamSalakhutdinov\Documents\Visual Studio 2015\Projects\signatureChecker\ConvNetSharp\bin\Release\ConvNetSharp.pdb
 C:\Users\RustamSalakhutdinov\Documents\Visual Studio 2015\Projects\signatureChecker\ConvNetSharp\obj\Release\ConvNetSharp.dll
 C:\Users\RustamSalakhutdinov\Documents\Visual Studio 2015\Projects\signatureChecker\ConvNetSharp\obj\Release\ConvNetSharp.pdb
+C:\signatureChecker\ConvNetSharp\bin\Release\ConvNetSharp.dll.config
+C:\signatureChecker\ConvNetSharp\bin\Release\ConvNetSharp.dll
+C:\signatureChecker\ConvNetSharp\bin\Release\ConvNetSharp.pdb
+C:\signatureChecker\ConvNetSharp\obj\Release\ConvNetSharp.csprojResolveAssemblyReference.cache
+C:\signatureChecker\ConvNetSharp\obj\Release\ConvNetSharp.dll
+C:\signatureChecker\ConvNetSharp\obj\Release\ConvNetSharp.pdb
